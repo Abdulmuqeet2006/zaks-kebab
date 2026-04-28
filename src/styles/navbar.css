@@ -1,0 +1,101 @@
+.navbar {
+  height: 82px;
+  background: #f4e6c8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 50px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #3b2720;
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.desktop-links {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.cart-btn,
+.mobile-menu-btn {
+  background: #3b2720;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+.mobile-menu-btn {
+  display: none;
+}
+
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 198;
+}
+
+.mobile-sidebar {
+  position: fixed;
+  top: 0;
+  left: -280px;
+  width: 260px;
+  height: 100vh;
+  background: #fff8ea;
+  z-index: 199;
+  padding: 24px;
+  transition: 0.3s;
+}
+
+.mobile-sidebar.open {
+  left: 0;
+}
+
+.mobile-sidebar a {
+  display: block;
+  padding: 12px;
+  background: #f4e6c8;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.close-menu {
+  font-size: 30px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .desktop-links {
+    display: none;
+  }
+
+  .mobile-menu-btn {
+    display: block;
+  }
+}
