@@ -302,6 +302,14 @@ export const products = [
   price: 2.6,
   image: "/images/Pepsi Max 1L.png",
 },
+{
+  id: 38,
+  category: "bebidas",
+  name: "Guaraná 33cl",
+  desc: "Lata 33cl",
+  price: 1.6,
+  image: "/images/guarana-33cl.png",
+},
 
   // ACOMPANHAMENTOS
   {
