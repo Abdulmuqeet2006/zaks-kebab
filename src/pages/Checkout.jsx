@@ -14,7 +14,6 @@ function Checkout() {
     name: user?.displayName || "",
     phone: user?.phone || "",
     address: user?.address || "",
-    postalCode: "",
     nif: user?.nif || "",
     method: "Entrega",
     payment: "Dinheiro",
@@ -24,34 +23,21 @@ function Checkout() {
   const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
   const deliveryMinimum = 7;
 
-  function getDeliveryFee() {
-    if (form.method === "Levantamento" || cart.length === 0) return 0;
-
-    const postal = form.postalCode.replace(/\D/g, "");
-
-    if (postal.startsWith("261")) return 1.5;
-    if (postal.startsWith("2625")) return 2.0;
-    if (postal.startsWith("2620")) return 2.5;
-
-    return 2.5;
-  }
-
-  const deliveryFee = getDeliveryFee();
-  const total = cart.length > 0 ? subtotal + deliveryFee : 0;
+  // ❌ SEM DELIVERY AUTOMÁTICO
+  const total = cart.length > 0 ? subtotal : 0;
 
   const canOrder =
     cart.length > 0 &&
     form.name.trim() &&
     form.phone.trim() &&
     (form.method === "Levantamento" || subtotal >= deliveryMinimum) &&
-    (form.method === "Levantamento" || form.address.trim()) &&
-    (form.method === "Levantamento" || form.postalCode.trim());
+    (form.method === "Levantamento" || form.address.trim());
 
   function handleChange(e) {
     const { name, value } = e.target;
 
     if (name === "method" && value === "Levantamento") {
-      setForm({ ...form, method: value, address: "", postalCode: "" });
+      setForm({ ...form, method: value, address: "" });
       return;
     }
 
@@ -62,7 +48,7 @@ function Checkout() {
     const mapsLink =
       form.method === "Entrega"
         ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-            form.address + " " + form.postalCode
+            form.address
           )}`
         : STORE_MAPS_LINK;
 
@@ -76,23 +62,43 @@ function Checkout() {
     return `
 🟢 NOVO PEDIDO — ZAKS KEBAB ALVERCA
 
-👤 Nome: ${form.name}
-📞 Telefone: ${form.phone}
-📍 Morada: ${form.address}
-📮 Código Postal: ${form.postalCode}
+━━━━━━━━━━━━━━
+👤 CLIENTE
+Nome: ${form.name}
+Telefone: ${form.phone}
+NIF: ${form.nif || "Não indicado"}
 
-🚚 Método: ${form.method}
+━━━━━━━━━━━━━━
+🚚 MÉTODO
+${form.method === "Entrega" ? "Entrega ao domicílio" : "Levantamento na loja"}
+${
+  form.method === "Entrega"
+    ? `Morada: ${form.address}\n📍 Google Maps: ${mapsLink}\n🚚 Taxa de entrega: A confirmar conforme zona`
+    : `Cliente vai levantar na loja\n📍 Loja: ${mapsLink}\n⏱️ 10–15 min`
+}
 
-🥙 Pedido:
+💳 Pagamento: ${form.payment}
+
+━━━━━━━━━━━━━━
+🥙 PEDIDO
 ${itemsText}
 
-💰 Total: €${total.toFixed(2)}
+━━━━━━━━━━━━━━
+💰 RESUMO
+Total produtos: €${total.toFixed(2)}
+
+━━━━━━━━━━━━━━
+📝 NOTAS
+${form.notes || "Sem notas"}
+
+━━━━━━━━━━━━━━
+⚠️ Pedido sujeito a confirmação manual.
 `;
   }
 
   function sendWhatsAppOrder() {
     if (!canOrder) {
-      alert("Preenche todos os dados");
+      alert("Por favor preenche os dados necessários.");
       return;
     }
 
@@ -111,44 +117,87 @@ ${itemsText}
 
         <div style={styles.layout}>
           <section style={styles.card}>
-            <h2 style={styles.cardTitle}>Dados</h2>
+            <h2 style={styles.cardTitle}>Dados do cliente</h2>
 
             <input style={styles.input} name="name" placeholder="Nome" value={form.name} onChange={handleChange} />
             <input style={styles.input} name="phone" placeholder="Telefone" value={form.phone} onChange={handleChange} />
+            <input style={styles.input} name="nif" placeholder="NIF opcional" value={form.nif} maxLength="9" onChange={handleChange} />
 
             <select style={styles.input} name="method" value={form.method} onChange={handleChange}>
               <option value="Entrega">Entrega</option>
-              <option value="Levantamento">Levantamento</option>
+              <option value="Levantamento">Levantamento na loja</option>
             </select>
 
             {form.method === "Entrega" && (
-              <>
-                <input style={styles.input} name="address" placeholder="Morada" value={form.address} onChange={handleChange} />
-                <input style={styles.input} name="postalCode" placeholder="Código Postal (ex: 2615-123)" value={form.postalCode} onChange={handleChange} />
-              </>
+              <input
+                style={styles.input}
+                name="address"
+                placeholder="Morada para entrega"
+                value={form.address}
+                onChange={handleChange}
+              />
             )}
+
+            {form.method === "Levantamento" && (
+              <div style={styles.pickupBox}>
+                <strong>🏬 Levantamento na loja</strong>
+                <p style={styles.boxText}>Pronto em 10–15 min</p>
+                <a href={STORE_MAPS_LINK} target="_blank" rel="noreferrer" style={styles.mapButton}>
+                  📍 Ver no Google Maps
+                </a>
+              </div>
+            )}
+
+            <textarea
+              style={styles.textarea}
+              name="notes"
+              placeholder="Notas: campainha, troco..."
+              value={form.notes}
+              onChange={handleChange}
+            />
           </section>
 
           <aside style={styles.card}>
-            <h2 style={styles.cardTitle}>Resumo</h2>
+            <h2 style={styles.cardTitle}>Resumo do pedido</h2>
 
-            <p>Subtotal: €{subtotal.toFixed(2)}</p>
+            {cart.map((item, i) => (
+              <div key={i} style={styles.item}>
+                <strong>{item.name}</strong>
+                <strong style={styles.itemPrice}>€{item.price.toFixed(2)}</strong>
+                <button style={styles.remove} onClick={() => removeFromCart(i)}>×</button>
+              </div>
+            ))}
 
+            <div style={styles.row}>
+              <span>Subtotal</span>
+              <strong>€{subtotal.toFixed(2)}</strong>
+            </div>
+
+            {/* 🔥 SÓ INFORMAÇÃO DE ZONAS */}
             {form.method === "Entrega" && (
-              <>
-                <p>Entrega: €{deliveryFee.toFixed(2)}</p>
-                {subtotal < deliveryMinimum && (
-                  <p style={{ color: "red" }}>
-                    Mínimo €7 (atual: €{subtotal.toFixed(2)})
-                  </p>
-                )}
-              </>
+              <div style={styles.deliveryBox}>
+                <p>🟢 Zona 1 — Bom Sucesso / Alverca</p>
+                <p>🟡 Zona 2 — Arcena / Forte da Casa</p>
+                <p>🔴 Zona 3 — Sobralinho / arredores</p>
+                <p style={{ marginTop: "8px", fontWeight: "900" }}>
+                  💬 Taxa de entrega será confirmada pela loja
+                </p>
+              </div>
             )}
 
-            <h2>Total: €{total.toFixed(2)}</h2>
+            {subtotal < deliveryMinimum && form.method === "Entrega" && (
+              <p style={styles.error}>
+                Pedido mínimo: €7 (atual: €{subtotal.toFixed(2)})
+              </p>
+            )}
 
-            <button style={styles.button} onClick={sendWhatsAppOrder}>
-              Enviar Pedido
+            <div style={styles.total}>
+              <span>Total</span>
+              <strong>€{total.toFixed(2)}</strong>
+            </div>
+
+            <button style={styles.whatsappButton} onClick={sendWhatsAppOrder}>
+              Enviar Pedido 📲
             </button>
           </aside>
         </div>
@@ -156,15 +205,3 @@ ${itemsText}
     </div>
   );
 }
-
-const styles = {
-  page: { background: "#0f0b08", minHeight: "100vh", color: "#fff" },
-  container: { maxWidth: "1100px", margin: "auto", padding: "20px" },
-  title: { color: "#ffb703", fontSize: "40px" },
-  layout: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" },
-  card: { background: "#1a120d", padding: "20px", borderRadius: "20px" },
-  input: { width: "100%", padding: "12px", margin: "10px 0" },
-  button: { padding: "15px", background: "#ffb703", border: "none", width: "100%" },
-};
-
-export default Checkout;
