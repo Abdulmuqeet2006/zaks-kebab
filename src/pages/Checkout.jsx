@@ -211,8 +211,8 @@ ${form.notes || "Sem notas"}
             {form.method === "Entrega" && (
               <div style={styles.deliveryBox}>
                 <p>🟢 Zona 1 — Bom Sucesso / Alverca - 1.50€</p>
-                <p>🟡 Zona 2 — Arcena / Forte da Casa - 2.00€</p>
-                <p>🔴 Zona 3 — Sobralinho - 2.50€</p>
+                <p>🟡 Zona 2 — Arcena - 2.00€</p>
+                <p>🔴 Zona 3 — Sobralinho / Forte da Casa - 2.50€</p>
                 <p style={{ marginTop: "8px", fontWeight: "1000", color: "#ffb703" }}>
                   
                 </p>
