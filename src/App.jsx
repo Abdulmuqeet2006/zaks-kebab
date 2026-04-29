@@ -14,6 +14,7 @@ import Delivery from "./pages/Delivery";
 import Checkout from "./pages/Checkout";
 import Login from "./pages/Login";
 import WithoutMenu from "./pages/WithoutMenu";
+import SeoPage from "./pages/SeoPage";
 
 function App() {
   const [cartOpen, setCartOpen] = useState(false);
@@ -34,6 +35,38 @@ function App() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/login" element={<Login />} />
         <Route path="/without-menu" element={<WithoutMenu />} />
+        <Route
+  path="/kebab-alverca"
+  element={
+    <SeoPage
+      title="Kebab em Alverca"
+      subtitle="Procura kebab em Alverca? No Zaks Kebab Alverca podes pedir menus, durum, kebab, pratos e acompanhamentos online."
+      keywords="kebab Alverca, kebab em Alverca, Zaks Kebab Alverca"
+    />
+  }
+/>
+
+<Route
+  path="/takeaway-alverca"
+  element={
+    <SeoPage
+      title="Takeaway em Alverca"
+      subtitle="Faz o teu pedido online e levanta na loja. Takeaway rápido, simples e saboroso em Alverca."
+      keywords="takeaway Alverca, comida takeaway Alverca, kebab takeaway Alverca"
+    />
+  }
+/>
+
+<Route
+  path="/entrega-kebab-alverca"
+  element={
+    <SeoPage
+      title="Entrega de Kebab em Alverca"
+      subtitle="Entrega de kebab em Alverca, Bom Sucesso, Arcena, Forte da Casa, Sobralinho e arredores."
+      keywords="entrega kebab Alverca, kebab delivery Alverca, pedir kebab Alverca"
+    />
+  }
+/>
       </Routes>
     </Router>
   );
