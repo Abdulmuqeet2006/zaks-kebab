@@ -1,53 +1,49 @@
-<!doctype html>
-<html lang="pt">
-  <head>
-    <meta charset="UTF-8" />
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-    <!-- Google verification -->
-    <meta name="google-site-verification" content="k5rOApyhbHJgfZ6B5knhQLDqvIp8_lfg_n6lhxQWfRc" />
+/* Base */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #0f0b08;
+  color: #fff7e8;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-    <!-- SEO básico -->
-    <meta name="description" content="Zaks Kebab Alverca - kebabs, durum, pratos, menus, takeaway e entrega rápida em Alverca do Ribatejo." />
-    <meta name="keywords" content="kebab Alverca, Zaks Kebab Alverca, takeaway Alverca, durum Alverca, restaurante kebab Alverca, entrega kebab Alverca" />
-    <meta name="author" content="Zaks Kebab Alverca" />
+/* Links */
+a {
+  text-decoration: none;
+  color: inherit;
+}
 
-    <!-- Mobile -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+/* Buttons */
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+/* Inputs */
+input,
+textarea,
+select {
+  font-family: inherit;
+  outline: none;
+}
 
-    <!-- Title (muito importante para Google) -->
-    <title>Zaks Kebab Alverca | Kebab & Takeaway em Alverca</title>
+/* Scrollbar (optional premium look) */
+::-webkit-scrollbar {
+  width: 8px;
+}
 
-    <!-- Open Graph (para redes sociais) -->
-    <meta property="og:title" content="Zaks Kebab Alverca" />
-    <meta property="og:description" content="Encomenda kebab, durum e pratos em Alverca. Entrega rápida e takeaway." />
-    <meta property="og:url" content="https://www.zakskebab.pt/" />
-    <meta property="og:type" content="website" />
+::-webkit-scrollbar-track {
+  background: #0f0b08;
+}
 
-    <!-- SEO avançado (Google entende melhor o negócio) -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Restaurant",
-        "name": "Zaks Kebab Alverca",
-        "url": "https://www.zakskebab.pt/",
-        "servesCuisine": "Kebab",
-        "priceRange": "€",
-        "telephone": "+351967292950",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Alverca do Ribatejo",
-          "addressCountry": "PT"
-        },
-        "hasMenu": "https://www.zakskebab.pt/menus"
-      }
-    </script>
-  </head>
-
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-</html>
+::-webkit-scrollbar-thumb {
+  background: #ffb703;
+  border-radius: 10px;
+}
