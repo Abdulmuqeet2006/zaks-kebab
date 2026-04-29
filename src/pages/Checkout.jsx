@@ -25,7 +25,6 @@ function Checkout() {
   const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
   const deliveryMinimum = 7;
 
-  // 🔥 FIX FINAL (AGORA FUNCIONA PERFEITO)
   function getDeliveryFee() {
     if (form.method === "Levantamento" || cart.length === 0) return 0;
 
@@ -38,19 +37,25 @@ function Checkout() {
       address.includes("bom sucesso") ||
       address.includes("bomsucesso") ||
       address.includes("alverca")
-    ) return 1.5;
+    ) {
+      return 1.5;
+    }
 
     if (
       address.includes("arcena") ||
       address.includes("forte da casa") ||
       address.includes("forte")
-    ) return 2.0;
+    ) {
+      return 2.0;
+    }
 
     if (
       address.includes("sobralinho") ||
       address.includes("vialonga") ||
       address.includes("povoa")
-    ) return 2.5;
+    ) {
+      return 2.5;
+    }
 
     return 2.5;
   }
@@ -206,32 +211,129 @@ ${form.notes || "Sem notas"}
               />
             )}
 
+            {form.method === "Levantamento" && (
+              <div style={styles.pickupBox}>
+                <strong>🏬 Levantamento na loja</strong>
+                <p style={styles.boxText}>Pronto para levantar em 10–15 min.</p>
+                <a href={STORE_MAPS_LINK} target="_blank" rel="noreferrer" style={styles.mapButton}>
+                  📍 Abrir loja no Google Maps
+                </a>
+              </div>
+            )}
+
             <select style={styles.input} name="payment" value={form.payment} onChange={handleChange}>
-              <option value="Dinheiro">Dinheiro</option>
-              <option value="MB Way">MB Way</option>
+              <option value="Dinheiro">Dinheiro - pagar na entrega/levantamento</option>
+              <option value="MB Way">MB Way - pagar na entrega/levantamento</option>
             </select>
+
+            <textarea
+              style={styles.textarea}
+              name="notes"
+              placeholder="Notas gerais: prédio, campainha, troco, etc..."
+              value={form.notes}
+              onChange={handleChange}
+            />
+
+            <p style={styles.warning}>
+              ⚠️ O pedido será enviado por WhatsApp ou Email e confirmado manualmente pela loja.
+            </p>
           </section>
 
           <aside style={styles.card}>
-            <h2 style={styles.cardTitle}>Resumo</h2>
+            <h2 style={styles.cardTitle}>Resumo do pedido</h2>
 
-            <p>Subtotal: €{subtotal.toFixed(2)}</p>
+            {cart.length === 0 && <p>O carrinho está vazio.</p>}
+
+            {cart.map((item, i) => (
+              <div key={i} style={styles.item}>
+                <div>
+                  <strong>{item.name}</strong>
+
+                  {item.basePrice && item.basePrice !== item.price && (
+                    <p style={styles.small}>Base: €{item.basePrice.toFixed(2)}</p>
+                  )}
+
+                  {item.drink && <p style={styles.small}>🥤 Bebida: {item.drink}</p>}
+
+                  {item.extras?.length > 0 && (
+                    <p style={styles.small}>
+                      Extras:{" "}
+                      {item.extras
+                        .map((e) => `${e.name} (+€${e.price.toFixed(2)})`)
+                        .join(", ")}
+                    </p>
+                  )}
+
+                  {item.notes && <p style={styles.small}>Notas: {item.notes}</p>}
+                </div>
+
+                <strong style={styles.itemPrice}>€{item.price.toFixed(2)}</strong>
+
+                <button style={styles.remove} onClick={() => removeFromCart(i)}>
+                  ×
+                </button>
+              </div>
+            ))}
+
+            <div style={styles.row}>
+              <span>Subtotal</span>
+              <strong>€{subtotal.toFixed(2)}</strong>
+            </div>
 
             {form.method === "Entrega" && (
               <>
-                <p>Entrega: €{deliveryFee.toFixed(2)}</p>
+                <div style={styles.deliveryBox}>
+                  <p>🟢 Zona 1: €1.50 — Bom Sucesso / Alverca</p>
+                  <p>🟡 Zona 2: €2.00 — Arcena / Forte da Casa</p>
+                  <p>🔴 Zona 3: €2.50 — Sobralinho / arredores</p>
+                </div>
+
+                <div style={styles.row}>
+                  <span>Entrega</span>
+                  <strong style={styles.deliveryPrice}>€{deliveryFee.toFixed(2)}</strong>
+                </div>
+
                 {subtotal < deliveryMinimum && (
-                  <p style={{ color: "red" }}>
-                    Pedido mínimo: €{deliveryMinimum}
+                  <p style={styles.error}>
+                    Pedido mínimo para entrega: €7. Valor atual: €{subtotal.toFixed(2)}.
                   </p>
                 )}
               </>
             )}
 
-            <h2>Total: €{total.toFixed(2)}</h2>
+            {form.method === "Levantamento" && (
+              <div style={styles.pickupSummary}>
+                🏬 Sem taxa de entrega
+                <br />
+                ⏱️ Pronto para levantar em 10–15 min
+              </div>
+            )}
 
-            <button onClick={sendWhatsAppOrder}>
-              Enviar WhatsApp
+            <div style={styles.total}>
+              <span>Total</span>
+              <strong>€{total.toFixed(2)}</strong>
+            </div>
+
+            <button
+              style={{
+                ...styles.whatsappButton,
+                opacity: canOrder ? 1 : 0.5,
+                cursor: canOrder ? "pointer" : "not-allowed",
+              }}
+              onClick={sendWhatsAppOrder}
+            >
+              Enviar pelo WhatsApp 📲
+            </button>
+
+            <button
+              style={{
+                ...styles.emailButton,
+                opacity: canOrder ? 1 : 0.5,
+                cursor: canOrder ? "pointer" : "not-allowed",
+              }}
+              onClick={sendEmailOrder}
+            >
+              Enviar por Email ✉️
             </button>
           </aside>
         </div>
@@ -241,12 +343,194 @@ ${form.notes || "Sem notas"}
 }
 
 const styles = {
-  page: { background: "#0f0b08", minHeight: "100vh", color: "#fff7e8" },
-  container: { maxWidth: "1100px", margin: "auto", padding: "20px" },
-  title: { fontSize: "36px", color: "#ffb703" },
-  layout: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" },
-  card: { background: "#1a120d", padding: "20px", borderRadius: "20px" },
-  input: { width: "100%", margin: "10px 0", padding: "12px" },
+  page: {
+    background:
+      "radial-gradient(circle at top right, rgba(255,183,3,.12), transparent 36%), linear-gradient(180deg, #0f0b08, #1b120d)",
+    minHeight: "100vh",
+    color: "#fff7e8",
+  },
+  container: {
+    maxWidth: "1180px",
+    margin: "0 auto",
+    padding: "28px 14px 70px",
+  },
+  title: {
+    fontSize: "clamp(38px, 6vw, 64px)",
+    fontWeight: "1000",
+    margin: "0 0 24px",
+    color: "#ffb703",
+    letterSpacing: "-1px",
+  },
+  layout: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+    gap: "22px",
+  },
+  card: {
+    background:
+      "radial-gradient(circle at top right, rgba(255,183,3,.13), transparent 34%), linear-gradient(180deg, #24150e, #130d09)",
+    padding: "22px",
+    borderRadius: "26px",
+    border: "1px solid rgba(255,183,3,0.25)",
+    boxShadow: "0 24px 60px rgba(0,0,0,.42)",
+  },
+  cardTitle: {
+    marginTop: 0,
+    fontSize: "25px",
+    color: "#fff7e8",
+  },
+  input: {
+    width: "100%",
+    padding: "14px",
+    margin: "8px 0",
+    borderRadius: "14px",
+    border: "1px solid rgba(255,183,3,.18)",
+    background: "#fff7e8",
+    color: "#160f0b",
+    boxSizing: "border-box",
+    fontSize: "15px",
+    outline: "none",
+  },
+  textarea: {
+    width: "100%",
+    minHeight: "105px",
+    padding: "14px",
+    margin: "8px 0",
+    borderRadius: "14px",
+    border: "1px solid rgba(255,183,3,.18)",
+    background: "#fff7e8",
+    color: "#160f0b",
+    boxSizing: "border-box",
+    fontSize: "15px",
+    outline: "none",
+  },
+  pickupBox: {
+    background: "rgba(255,183,3,.12)",
+    border: "1px solid rgba(255,183,3,.25)",
+    padding: "14px",
+    borderRadius: "16px",
+    margin: "10px 0",
+    lineHeight: "1.5",
+    fontWeight: "700",
+  },
+  boxText: {
+    margin: "6px 0",
+    color: "#d7c2a8",
+  },
+  pickupSummary: {
+    background: "rgba(255,183,3,.12)",
+    border: "1px solid rgba(255,183,3,.25)",
+    padding: "12px",
+    borderRadius: "14px",
+    margin: "14px 0",
+    fontWeight: "800",
+    lineHeight: "1.5",
+  },
+  mapButton: {
+    display: "inline-block",
+    marginTop: "8px",
+    background: "linear-gradient(135deg, #ffb703, #fb8500)",
+    color: "#160f0b",
+    padding: "10px 14px",
+    borderRadius: "999px",
+    textDecoration: "none",
+    fontWeight: "1000",
+  },
+  warning: {
+    background: "rgba(255,183,3,.12)",
+    border: "1px solid rgba(255,183,3,.25)",
+    padding: "12px",
+    borderRadius: "14px",
+    fontWeight: "800",
+    fontSize: "14px",
+    lineHeight: "1.4",
+    color: "#fff7e8",
+  },
+  item: {
+    display: "grid",
+    gridTemplateColumns: "1fr",
+    gap: "8px",
+    padding: "14px 0",
+    borderBottom: "1px solid rgba(255,255,255,.12)",
+  },
+  itemPrice: {
+    fontSize: "17px",
+    color: "#ffb703",
+  },
+  small: {
+    margin: "5px 0 0",
+    fontSize: "13px",
+    color: "#cdb89d",
+    lineHeight: "1.4",
+  },
+  remove: {
+    background: "rgba(255,255,255,.08)",
+    color: "white",
+    border: "1px solid rgba(255,255,255,.16)",
+    borderRadius: "12px",
+    width: "100%",
+    padding: "9px",
+    cursor: "pointer",
+    fontWeight: "900",
+  },
+  row: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginTop: "12px",
+    fontWeight: "800",
+  },
+  deliveryPrice: {
+    color: "#ffb703",
+    fontSize: "18px",
+  },
+  deliveryBox: {
+    background: "rgba(255,183,3,.12)",
+    border: "1px solid rgba(255,183,3,.25)",
+    padding: "12px",
+    borderRadius: "14px",
+    margin: "14px 0",
+    fontWeight: "700",
+    fontSize: "14px",
+    lineHeight: "1.5",
+    color: "#d7c2a8",
+  },
+  total: {
+    display: "flex",
+    justifyContent: "space-between",
+    fontSize: "26px",
+    fontWeight: "1000",
+    padding: "18px 0",
+    borderTop: "2px solid rgba(255,183,3,.55)",
+    marginTop: "15px",
+    color: "#ffb703",
+  },
+  error: {
+    color: "#ff6b6b",
+    fontWeight: "900",
+    lineHeight: "1.4",
+  },
+  whatsappButton: {
+    width: "100%",
+    padding: "16px",
+    background: "#25D366",
+    color: "white",
+    border: "none",
+    borderRadius: "16px",
+    fontWeight: "1000",
+    fontSize: "16px",
+    marginTop: "10px",
+  },
+  emailButton: {
+    width: "100%",
+    padding: "16px",
+    background: "linear-gradient(135deg, #ffb703, #fb8500)",
+    color: "#160f0b",
+    border: "none",
+    borderRadius: "16px",
+    fontWeight: "1000",
+    fontSize: "16px",
+    marginTop: "10px",
+  },
 };
 
 export default Checkout;
