@@ -23,7 +23,7 @@ function Checkout() {
   });
 
   const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
-  const deliveryMinimum = 9;
+  const deliveryMinimum = 7;
 
   function getDeliveryFee() {
     if (form.method === "Levantamento" || cart.length === 0) return 0;
@@ -274,7 +274,7 @@ ${form.notes || "Sem notas"}
 
                 {subtotal < deliveryMinimum && (
                   <p style={styles.error}>
-                    Pedido mínimo para entrega: €9. Valor atual: €{subtotal.toFixed(2)}.
+                    Pedido mínimo para entrega: €7. Valor atual: €{subtotal.toFixed(2)}.
                   </p>
                 )}
               </>
