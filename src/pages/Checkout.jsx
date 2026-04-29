@@ -16,6 +16,7 @@ function Checkout() {
     phone: user?.phone || "",
     email: user?.email || "",
     address: user?.address || "",
+    postalCode: "",
     nif: user?.nif || "",
     method: "Entrega",
     payment: "Dinheiro",
@@ -27,6 +28,24 @@ function Checkout() {
 
   function getDeliveryFee() {
     if (form.method === "Levantamento" || cart.length === 0) return 0;
+
+    const postal = form.postalCode.replace(/\D/g, "");
+
+    if (
+      postal.startsWith("2615") ||
+      postal.startsWith("2610") ||
+      postal.startsWith("2600")
+    ) {
+      return 1.5;
+    }
+
+    if (postal.startsWith("2625")) {
+      return 2.0;
+    }
+
+    if (postal.startsWith("2620")) {
+      return 2.5;
+    }
 
     const address = form.address
       .toLowerCase()
@@ -68,13 +87,14 @@ function Checkout() {
     form.name.trim() &&
     form.phone.trim() &&
     (form.method === "Levantamento" || subtotal >= deliveryMinimum) &&
-    (form.method === "Levantamento" || form.address.trim());
+    (form.method === "Levantamento" || form.address.trim()) &&
+    (form.method === "Levantamento" || form.postalCode.trim());
 
   function handleChange(e) {
     const { name, value } = e.target;
 
     if (name === "method" && value === "Levantamento") {
-      setForm({ ...form, method: value, address: "" });
+      setForm({ ...form, method: value, address: "", postalCode: "" });
       return;
     }
 
@@ -85,7 +105,7 @@ function Checkout() {
     const mapsLink =
       form.method === "Entrega"
         ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-            form.address
+            `${form.address} ${form.postalCode}`
           )}`
         : STORE_MAPS_LINK;
 
@@ -128,7 +148,7 @@ NIF: ${form.nif || "Não indicado"}
 ${form.method === "Entrega" ? "Entrega ao domicílio" : "Levantamento na loja"}
 ${
   form.method === "Entrega"
-    ? `Morada: ${form.address}\n📍 Google Maps: ${mapsLink}`
+    ? `Morada: ${form.address}\nCódigo Postal: ${form.postalCode}\n📍 Google Maps: ${mapsLink}`
     : `Cliente vai levantar na loja\n📍 Loja no Google Maps: ${mapsLink}\n⏱️ Pronto para levantar em 10–15 min`
 }
 
@@ -202,13 +222,23 @@ ${form.notes || "Sem notas"}
             </select>
 
             {form.method === "Entrega" && (
-              <input
-                style={styles.input}
-                name="address"
-                placeholder="Morada para entrega"
-                value={form.address}
-                onChange={handleChange}
-              />
+              <>
+                <input
+                  style={styles.input}
+                  name="address"
+                  placeholder="Morada para entrega"
+                  value={form.address}
+                  onChange={handleChange}
+                />
+
+                <input
+                  style={styles.input}
+                  name="postalCode"
+                  placeholder="Código Postal ex: 2615-123"
+                  value={form.postalCode}
+                  onChange={handleChange}
+                />
+              </>
             )}
 
             {form.method === "Levantamento" && (
@@ -283,9 +313,9 @@ ${form.notes || "Sem notas"}
             {form.method === "Entrega" && (
               <>
                 <div style={styles.deliveryBox}>
-                  <p>🟢 Zona 1: €1.50 — Bom Sucesso / Alverca</p>
-                  <p>🟡 Zona 2: €2.00 — Arcena / Forte da Casa</p>
-                  <p>🔴 Zona 3: €2.50 — Sobralinho / arredores</p>
+                  <p>🟢 Zona 1: €1.50 — 2615 / 2610 / 2600 — Bom Sucesso / Alverca</p>
+                  <p>🟡 Zona 2: €2.00 — 2625 — Arcena / Forte da Casa</p>
+                  <p>🔴 Zona 3: €2.50 — 2620 / arredores</p>
                 </div>
 
                 <div style={styles.row}>
