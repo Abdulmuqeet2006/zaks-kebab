@@ -210,9 +210,9 @@ ${form.notes || "Sem notas"}
 
             {form.method === "Entrega" && (
               <div style={styles.deliveryBox}>
-                <p>🟢 Zona 1 — Bom Sucesso / Alverca</p>
-                <p>🟡 Zona 2 — Arcena / Forte da Casa</p>
-                <p>🔴 Zona 3 — Sobralinho / arredores</p>
+                <p>🟢 Zona 1 — Bom Sucesso / Alverca 1.50€</p>
+                <p>🟡 Zona 2 — Arcena / Forte da Casa 2.00€</p>
+                <p>🔴 Zona 3 — Sobralinho / arredores2.50€</p>
                 <p style={{ marginTop: "8px", fontWeight: "1000", color: "#ffb703" }}>
                   🚚 Taxa de entrega: a confirmar pela loja
                 </p>
