@@ -219,9 +219,9 @@ export const products = [
     desc: "Falafel com batata frita e salada",
     price: 7.99,
     image: "/images/Prato falafel.jpeg",
-  }
+  },
 
-  /  // BEBIDAS
+  // BEBIDAS
   {
     id: 28,
     category: "bebidas",
@@ -241,13 +241,21 @@ export const products = [
   {
     id: 30,
     category: "bebidas",
-    name: "Pepsi 2L",
-    desc: "Garrafa 2L",
+    name: "Coca-Cola 1L",
+    desc: "Garrafa 1L",
+    price: 2.6,
+    image: "/images/Coca-Cola 1L.png",
+  },
+  {
+    id: 31,
+    category: "bebidas",
+    name: "Pepsi 1L",
+    desc: "Garrafa 1L",
     price: 2.6,
     image: "/images/Pessi 2L.jpeg",
   },
   {
-    id: 31,
+    id: 32,
     category: "bebidas",
     name: "Lipton Ice Tea Limão 33cl",
     desc: "Lata 33cl",
@@ -255,7 +263,7 @@ export const products = [
     image: "/images/Lipton Ice Tea Limão 33cL.png",
   },
   {
-    id: 32,
+    id: 33,
     category: "bebidas",
     name: "Lipton Ice Tea Manga 33cl",
     desc: "Lata 33cl",
@@ -263,7 +271,7 @@ export const products = [
     image: "/images/Lipton Ice Tea Manga 33cL.png",
   },
   {
-    id: 33,
+    id: 34,
     category: "bebidas",
     name: "Sumol Ananás 33cl",
     desc: "Lata 33cl",
@@ -271,16 +279,17 @@ export const products = [
     image: "/images/Sumol Ananás 33cL.png",
   },
   {
-    id: 34,
+    id: 35,
     category: "bebidas",
     name: "Sumol Laranja 33cl",
     desc: "Lata 33cl",
     price: 1.6,
     image: "/images/Sumol Laranja 33cL.png",
   },
+
   // ACOMPANHAMENTOS
   {
-    id: 30,
+    id: 50,
     category: "extras",
     name: "Chamuça",
     desc: "Acompanhamento",
@@ -288,7 +297,7 @@ export const products = [
     image: "/images/Chamuça.jpeg",
   },
   {
-    id: 31,
+    id: 51,
     category: "extras",
     name: "Batata Frita",
     desc: "Acompanhamento",
@@ -296,7 +305,7 @@ export const products = [
     image: "/images/Batata Frita.png",
   },
   {
-    id: 32,
+    id: 52,
     category: "extras",
     name: "Salada Grega",
     desc: "Acompanhamento",
@@ -304,7 +313,7 @@ export const products = [
     image: "/images/Salada.jpeg",
   },
   {
-    id: 33,
+    id: 53,
     category: "extras",
     name: "Salada Kebab",
     desc: "Acompanhamento",
@@ -312,7 +321,7 @@ export const products = [
     image: "/images/Salada Kebab.jpg",
   },
   {
-    id: 34,
+    id: 54,
     category: "extras",
     name: "Salada",
     desc: "Acompanhamento",
@@ -320,11 +329,11 @@ export const products = [
     image: "/images/Salada.jpeg",
   },
   {
-    id: 35,
+    id: 55,
     category: "extras",
     name: "Molho Adicional",
     desc: "Molho extra",
-    price: 0.5,
+    price: 1.0,
     image: "/images/Molho de Alho.png",
   },
 ];

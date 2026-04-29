@@ -10,12 +10,7 @@ const DRINKS_NORMAL = [
   "Água 50cl",
 ];
 
-const DRINKS_1L = [
-  "Pepsi 1L",
-  "Sumol Laranja 1L",
-  "Sumol Ananás 1L",
-  "Ice Tea 1L",
-];
+const DRINKS_1L = ["Coca-Cola 1L", "Pepsi 1L"];
 
 function normalize(text = "") {
   return text.toLowerCase();
