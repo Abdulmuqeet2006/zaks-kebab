@@ -286,6 +286,22 @@ export const products = [
     price: 1.6,
     image: "/images/Sumol Laranja 33cL.png",
   },
+  {
+  id: 36,
+  category: "bebidas",
+  name: "Coca-Cola Zero 1L",
+  desc: "Garrafa 1L",
+  price: 2.6,
+  image: "/images/Coca-Cola Zero 1L.png",
+},
+{
+  id: 37,
+  category: "bebidas",
+  name: "Pepsi Max 1L",
+  desc: "Garrafa 1L",
+  price: 2.6,
+  image: "/images/Pepsi Max 1L.png",
+},
 
   // ACOMPANHAMENTOS
   {
