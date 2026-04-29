@@ -4,16 +4,35 @@ const CartContext = createContext();
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState(() => {
-    const savedCart = localStorage.getItem("zaksCart");
-    return savedCart ? JSON.parse(savedCart) : [];
+    try {
+      const saved = localStorage.getItem("zaksCart");
+      const parsed = saved ? JSON.parse(saved) : [];
+
+      return Array.isArray(parsed)
+        ? parsed.filter((item) => item && item.name && Number(item.price) > 0)
+        : [];
+    } catch {
+      return [];
+    }
   });
 
   useEffect(() => {
-    localStorage.setItem("zaksCart", JSON.stringify(cart));
+    const cleanCart = cart.filter(
+      (item) => item && item.name && Number(item.price) > 0
+    );
+
+    localStorage.setItem("zaksCart", JSON.stringify(cleanCart));
   }, [cart]);
 
   function addToCart(item) {
-    setCart((prevCart) => [...prevCart, item]);
+    if (!item || !item.name || Number(item.price) <= 0) return;
+
+    const cleanItem = {
+      ...item,
+      price: Number(item.price),
+    };
+
+    setCart((prevCart) => [...prevCart, cleanItem]);
   }
 
   function removeFromCart(index) {
@@ -23,6 +42,7 @@ export function CartProvider({ children }) {
   function clearCart() {
     setCart([]);
     localStorage.removeItem("zaksCart");
+    localStorage.removeItem("cart");
   }
 
   return (

@@ -47,7 +47,7 @@ function Navbar({ setCartOpen }) {
           <button className="menu-button" onClick={() => setMenuOpen(true)}>☰</button>
 
           <button className="cart-button" onClick={() => setCartOpen(true)}>
-            🛒 {cart.length}
+            🛒 {cart.filter((item) => item && Number(item.price) > 0).length}
           </button>
 
           {user ? (
