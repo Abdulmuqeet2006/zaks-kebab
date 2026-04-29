@@ -4,7 +4,8 @@ import { useCart } from "../context/CartContext";
 function CartSidebar({ open, setOpen }) {
   const { cart, removeFromCart, clearCart } = useCart();
 
-  const total = cart.reduce((sum, item) => sum + item.price, 0);
+  const total = cart.reduce((sum, item) => sum + Number(item.price || 0), 0);
+  const isEmpty = cart.length === 0;
 
   return (
     <>
@@ -16,73 +17,70 @@ function CartSidebar({ open, setOpen }) {
         <div className="cart-header">
           <div>
             <span>🔥 Zaks Kebab</span>
-            <h2>O teu carrinho</h2>
+            <h2>Your cart</h2>
           </div>
 
           <button onClick={() => setOpen(false)}>×</button>
         </div>
 
         <div className="cart-body">
-          {cart.length === 0 && (
+          {isEmpty ? (
             <div className="empty-cart">
-              <h3>🛒 Carrinho vazio</h3>
-              <p>Adiciona um menu ou kebab para começar o pedido.</p>
+              <h3>🛒 Empty cart</h3>
+              <p>Add a menu or kebab to start your order.</p>
               <Link to="/menus" onClick={() => setOpen(false)}>
-                Ver Menus
+                View Menus
               </Link>
             </div>
+          ) : (
+            cart.map((item, i) => (
+              <div className="cart-item" key={i}>
+                <div className="item-info">
+                  <strong>{item.name}</strong>
+
+                  {item.drink && <p>🥤 Bebida: {item.drink}</p>}
+
+                  {item.extras?.length > 0 && (
+                    <p>
+                      ➕{" "}
+                      {item.extras
+                        .map((e) => `${e.name} (+€${e.price.toFixed(2)})`)
+                        .join(", ")}
+                    </p>
+                  )}
+
+                  {item.notes && <p>📝 {item.notes}</p>}
+                </div>
+
+                <div className="item-bottom">
+                  <span>€{Number(item.price || 0).toFixed(2)}</span>
+                  <button onClick={() => removeFromCart(i)}>Remove</button>
+                </div>
+              </div>
+            ))
           )}
+        </div>
 
-          {cart.map((item, i) => (
-            <div className="cart-item" key={i}>
-              <div className="item-info">
-                <strong>{item.name}</strong>
-
-                {item.drink && <p>🥤 Bebida: {item.drink}</p>}
-
-                {item.extras?.length > 0 && (
-                  <p>
-                    ➕{" "}
-                    {item.extras
-                      .map((e) => `${e.name} (+€${e.price.toFixed(2)})`)
-                      .join(", ")}
-                  </p>
-                )}
-
-                {item.notes && <p>📝 {item.notes}</p>}
-              </div>
-
-              <div className="item-bottom">
-                <span>€{item.price.toFixed(2)}</span>
-                <button onClick={() => removeFromCart(i)}>Remover</button>
-              </div>
+        {!isEmpty && (
+          <div className="cart-footer">
+            <div className="total-line">
+              <span>Total</span>
+              <strong>€{total.toFixed(2)}</strong>
             </div>
-          ))}
-        </div>
 
-        <div className="cart-footer">
-          <div className="total-line">
-            <span>Total</span>
-            <strong>€{total.toFixed(2)}</strong>
-          </div>
+            <Link
+              to="/checkout"
+              className="checkout-btn"
+              onClick={() => setOpen(false)}
+            >
+              Complete Order →
+            </Link>
 
-          <Link
-            to="/checkout"
-            className={`checkout-btn ${cart.length === 0 ? "disabled" : ""}`}
-            onClick={(e) => {
-              if (cart.length === 0) e.preventDefault();
-              else setOpen(false);
-            }}
-          >
-            Finalizar Pedido →
-          </Link>
-
-          {cart.length > 0 && (
             <button className="clear-btn" onClick={clearCart}>
-              Limpar carrinho
+              Clear cart
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </aside>
     </>
   );
@@ -256,11 +254,6 @@ const css = `
   font-weight: 1000;
   text-decoration: none;
   box-shadow: 0 18px 42px rgba(251,133,0,.35);
-}
-
-.checkout-btn.disabled {
-  opacity: .45;
-  pointer-events: none;
 }
 
 .clear-btn {
