@@ -15,6 +15,7 @@ import Checkout from "./pages/Checkout";
 import Login from "./pages/Login";
 import WithoutMenu from "./pages/WithoutMenu";
 import SeoPage from "./pages/SeoPage";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   const [cartOpen, setCartOpen] = useState(false);
@@ -35,6 +36,7 @@ function App() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/login" element={<Login />} />
         <Route path="/without-menu" element={<WithoutMenu />} />
+        <Route path="/zaks-admin" element={<AdminDashboard />} />
         <Route
   path="/kebab-alverca"
   element={
