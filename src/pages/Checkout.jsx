@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase";
 
 const WHATSAPP = "351967292950";
+
 const STORE_MAPS_LINK =
   "https://www.google.com/maps/search/?api=1&query=Zaks%20Kebab%20Alverca";
 
@@ -20,7 +23,11 @@ function Checkout() {
     notes: "",
   });
 
-  const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+  const subtotal = cart.reduce(
+    (sum, item) => sum + Number(item.price || 0),
+    0
+  );
+
   const deliveryMinimum = 7;
   const total = subtotal;
 
@@ -42,10 +49,41 @@ function Checkout() {
     setForm({ ...form, [name]: value });
   }
 
+  async function saveOrderToFirestore() {
+    console.log("A tentar guardar pedido no Firebase...");
+
+    const orderData = {
+      customerName: form.name,
+      phone: form.phone,
+      address: form.address || "",
+      nif: form.nif || "",
+      method: form.method,
+      payment: form.payment,
+      notes: form.notes || "",
+      items: cart.map((item) => ({
+        name: item.name || "",
+        price: Number(item.price || 0),
+        drink: item.drink || "",
+        extras: item.extras || [],
+        notes: item.notes || "",
+      })),
+      subtotal: Number(subtotal),
+      total: Number(total),
+      status: "new",
+      createdAt: serverTimestamp(),
+    };
+
+    const docRef = await addDoc(collection(db, "orders"), orderData);
+
+    console.log("Pedido guardado com sucesso:", docRef.id);
+  }
+
   function buildOrderMessage() {
     const mapsLink =
       form.method === "Entrega"
-        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(form.address)}`
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+            form.address
+          )}`
         : STORE_MAPS_LINK;
 
     const itemsText = cart
@@ -55,13 +93,15 @@ function Checkout() {
         const extras =
           item.extras?.length > 0
             ? `\n   ➕ Extras: ${item.extras
-                .map((e) => `${e.name} (+€${e.price.toFixed(2)})`)
+                .map((e) => `${e.name} (+€${Number(e.price || 0).toFixed(2)})`)
                 .join(", ")}`
             : "";
 
         const notes = item.notes ? `\n   📝 Notas: ${item.notes}` : "";
 
-        return `🍴 ${i + 1}. ${item.name} — €${item.price.toFixed(2)}${drink}${extras}${notes}`;
+        return `🍴 ${i + 1}. ${item.name} — €${Number(item.price || 0).toFixed(
+          2
+        )}${drink}${extras}${notes}`;
       })
       .join("\n\n");
 
@@ -103,16 +143,26 @@ ${form.notes || "Sem notas"}
 `;
   }
 
-  function sendWhatsAppOrder() {
+  async function sendWhatsAppOrder() {
     if (!canOrder) {
       alert("Por favor preenche os dados necessários.");
       return;
     }
 
-    const message = buildOrderMessage();
-    clearCart();
+    try {
+      const message = buildOrderMessage();
 
-    window.location.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`;
+      await saveOrderToFirestore();
+
+      clearCart();
+
+      window.location.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
+        message
+      )}`;
+    } catch (error) {
+      console.error("Erro ao guardar pedido:", error);
+      alert("Erro ao guardar o pedido. Verifica as regras do Firebase.");
+    }
   }
 
   return (
@@ -124,11 +174,37 @@ ${form.notes || "Sem notas"}
           <section style={styles.card}>
             <h2 style={styles.cardTitle}>Dados do cliente</h2>
 
-            <input style={styles.input} name="name" placeholder="Nome" value={form.name} onChange={handleChange} />
-            <input style={styles.input} name="phone" placeholder="Telefone" value={form.phone} onChange={handleChange} />
-            <input style={styles.input} name="nif" placeholder="NIF opcional" value={form.nif} maxLength="9" onChange={handleChange} />
+            <input
+              style={styles.input}
+              name="name"
+              placeholder="Nome"
+              value={form.name}
+              onChange={handleChange}
+            />
 
-            <select style={styles.input} name="method" value={form.method} onChange={handleChange}>
+            <input
+              style={styles.input}
+              name="phone"
+              placeholder="Telefone"
+              value={form.phone}
+              onChange={handleChange}
+            />
+
+            <input
+              style={styles.input}
+              name="nif"
+              placeholder="NIF opcional"
+              value={form.nif}
+              maxLength="9"
+              onChange={handleChange}
+            />
+
+            <select
+              style={styles.input}
+              name="method"
+              value={form.method}
+              onChange={handleChange}
+            >
               <option value="Entrega">Entrega</option>
               <option value="Levantamento">Levantamento na loja</option>
             </select>
@@ -147,15 +223,29 @@ ${form.notes || "Sem notas"}
               <div style={styles.pickupBox}>
                 <strong>🏬 Levantamento na loja</strong>
                 <p style={styles.boxText}>Pronto para levantar em 10–15 min.</p>
-                <a href={STORE_MAPS_LINK} target="_blank" rel="noreferrer" style={styles.mapButton}>
+                <a
+                  href={STORE_MAPS_LINK}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={styles.mapButton}
+                >
                   📍 Abrir loja no Google Maps
                 </a>
               </div>
             )}
 
-            <select style={styles.input} name="payment" value={form.payment} onChange={handleChange}>
-              <option value="Dinheiro">Dinheiro - pagar na entrega/levantamento</option>
-              <option value="MB Way">MB Way - pagar na entrega/levantamento</option>
+            <select
+              style={styles.input}
+              name="payment"
+              value={form.payment}
+              onChange={handleChange}
+            >
+              <option value="Dinheiro">
+                Dinheiro - pagar na entrega/levantamento
+              </option>
+              <option value="MB Way">
+                MB Way - pagar na entrega/levantamento
+              </option>
             </select>
 
             <textarea
@@ -167,7 +257,8 @@ ${form.notes || "Sem notas"}
             />
 
             <p style={styles.warning}>
-              ⚠️ A taxa de entrega será confirmada manualmente pela loja conforme a zona.
+              ⚠️ A taxa de entrega será confirmada manualmente pela loja conforme
+              a zona.
             </p>
           </section>
 
@@ -181,23 +272,35 @@ ${form.notes || "Sem notas"}
                 <div>
                   <strong>{item.name}</strong>
 
-                  {item.drink && <p style={styles.small}>🥤 Bebida: {item.drink}</p>}
+                  {item.drink && (
+                    <p style={styles.small}>🥤 Bebida: {item.drink}</p>
+                  )}
 
                   {item.extras?.length > 0 && (
                     <p style={styles.small}>
                       Extras:{" "}
                       {item.extras
-                        .map((e) => `${e.name} (+€${e.price.toFixed(2)})`)
+                        .map(
+                          (e) =>
+                            `${e.name} (+€${Number(e.price || 0).toFixed(2)})`
+                        )
                         .join(", ")}
                     </p>
                   )}
 
-                  {item.notes && <p style={styles.small}>Notas: {item.notes}</p>}
+                  {item.notes && (
+                    <p style={styles.small}>Notas: {item.notes}</p>
+                  )}
                 </div>
 
-                <strong style={styles.itemPrice}>€{item.price.toFixed(2)}</strong>
+                <strong style={styles.itemPrice}>
+                  €{Number(item.price || 0).toFixed(2)}
+                </strong>
 
-                <button style={styles.remove} onClick={() => removeFromCart(i)}>
+                <button
+                  style={styles.remove}
+                  onClick={() => removeFromCart(i)}
+                >
                   ×
                 </button>
               </div>
@@ -210,18 +313,19 @@ ${form.notes || "Sem notas"}
 
             {form.method === "Entrega" && (
               <div style={styles.deliveryBox}>
-                <p>🟢 Zona 1 — Bom Sucesso / Arcena - 1.50€</p>
-                <p>🟡 Zona 2 — Alverca - 2.00€</p>
-                <p>🔴 Zona 3 — Sobralinho / Forte da Casa - 2.50€</p>
-                <p style={{ marginTop: "8px", fontWeight: "1000", color: "#ffb703" }}>
-                  
+                <p>🟢 Zona 1 — Bom Sucesso / Alverca</p>
+                <p>🟡 Zona 2 — Arcena / Forte da Casa</p>
+                <p>🔴 Zona 3 — Sobralinho</p>
+                <p style={styles.deliveryImportant}>
+                  🚚 Taxa de entrega: a confirmar pela loja
                 </p>
               </div>
             )}
 
             {subtotal < deliveryMinimum && form.method === "Entrega" && (
               <p style={styles.error}>
-                Pedido mínimo para entrega: €7. Valor atual: €{subtotal.toFixed(2)}.
+                Pedido mínimo para entrega: €7. Valor atual: €
+                {subtotal.toFixed(2)}.
               </p>
             )}
 
@@ -272,7 +376,6 @@ const styles = {
     fontWeight: "1000",
     margin: "0 0 24px",
     color: "#ffb703",
-    letterSpacing: "-1px",
   },
   layout: {
     display: "grid",
@@ -402,6 +505,11 @@ const styles = {
     fontSize: "14px",
     lineHeight: "1.5",
     color: "#d7c2a8",
+  },
+  deliveryImportant: {
+    marginTop: "8px",
+    fontWeight: "1000",
+    color: "#ffb703",
   },
   total: {
     display: "flex",
