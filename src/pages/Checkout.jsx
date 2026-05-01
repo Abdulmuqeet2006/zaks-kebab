@@ -144,26 +144,6 @@ ${form.notes || "Sem notas"}
   }
 
   async function sendWhatsAppOrder() {
-    if (!canOrder) {
-      alert("Por favor preenche os dados necessários.");
-      return;
-    }
-
-    try {
-      const message = buildOrderMessage();
-
-      await saveOrderToFirestore();
-
-      clearCart();
-
-      window.location.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
-        message
-      )}`;
-    } catch (error) {
-      console.error("Erro ao guardar pedido:", error);
-      alert("Erro ao guardar o pedido. Verifica as regras do Firebase.");
-    }
-  }
 
   return (
     <div style={styles.page}>
@@ -539,4 +519,5 @@ const styles = {
   },
 };
 
+}
 export default Checkout;
