@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../firebase";
 
 function Login() {
   const { login, register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || "/";
 
   const [mode, setMode] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
@@ -22,25 +25,11 @@ function Login() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function isStrongPassword(password) {
-    return (
-      password.length >= 8 &&
-      /[A-Z]/.test(password) &&
-      /[a-z]/.test(password) &&
-      /[0-9]/.test(password)
-    );
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
     setMessage("");
 
     if (mode === "login") {
-      if (!form.email || !form.password) {
-        alert("Preenche email e password.");
-        return;
-      }
-
       const result = await login(form.email, form.password);
 
       if (!result.success) {
@@ -48,23 +37,12 @@ function Login() {
         return;
       }
 
-      navigate("/");
+      // 🔥 AQUI É A MÁGICA
+      navigate(from, { replace: true });
       return;
     }
 
     if (mode === "register") {
-      if (!form.name || !form.email || !form.password) {
-        alert("Preenche nome, email e password.");
-        return;
-      }
-
-      if (!isStrongPassword(form.password)) {
-        alert(
-          "A password deve ter pelo menos 8 caracteres, uma letra maiúscula, uma minúscula e um número."
-        );
-        return;
-      }
-
       const result = await register(form.name, form.email, form.password);
 
       if (!result.success) {
@@ -72,13 +50,8 @@ function Login() {
         return;
       }
 
-      setMessage("Conta criada! Verifica o teu email e depois faz login.");
+      setMessage("Conta criada! Agora faz login.");
       setMode("login");
-      setForm({
-        name: "",
-        email: form.email,
-        password: "",
-      });
     }
   }
 
@@ -90,124 +63,63 @@ function Login() {
 
     try {
       await sendPasswordResetEmail(auth, form.email);
-      setMessage("Email para recuperar password enviado. Verifica a tua caixa de entrada ou spam.");
-    } catch (error) {
-      alert("Não foi possível enviar o email. Confirma se o email está correto.");
+      setMessage("Email enviado.");
+    } catch {
+      alert("Erro ao enviar email.");
     }
   }
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <div style={styles.logoBox}>
-          <img src="/images/logo.png" alt="Zaks Kebab" style={styles.logo} />
-          <h1>Zaks Kebab</h1>
-          <p>Alverca</p>
-        </div>
+    <div style={{ padding: 40 }}>
+      <h1>{mode === "login" ? "Login" : "Registar"}</h1>
 
-        <div style={styles.tabs}>
-          <button
-            type="button"
-            onClick={() => {
-              setMode("login");
-              setMessage("");
-            }}
-            style={{
-              ...styles.tab,
-              background: mode === "login" ? "#3b2720" : "#fff8ea",
-              color: mode === "login" ? "white" : "#3b2720",
-            }}
-          >
-            Login
-          </button>
+      {message && <p>{message}</p>}
 
-          <button
-            type="button"
-            onClick={() => {
-              setMode("register");
-              setMessage("");
-            }}
-            style={{
-              ...styles.tab,
-              background: mode === "register" ? "#3b2720" : "#fff8ea",
-              color: mode === "register" ? "white" : "#3b2720",
-            }}
-          >
-            Registar
-          </button>
-        </div>
-
-        {message && <p style={styles.success}>{message}</p>}
-
-        <form onSubmit={handleSubmit}>
-          {mode === "register" && (
-            <input
-              style={styles.input}
-              name="name"
-              placeholder="Nome completo"
-              value={form.name}
-              onChange={handleChange}
-            />
-          )}
-
+      <form onSubmit={handleSubmit}>
+        {mode === "register" && (
           <input
-            style={styles.input}
-            name="email"
-            type="email"
-            placeholder="Email"
-            value={form.email}
+            name="name"
+            placeholder="Nome"
+            value={form.name}
             onChange={handleChange}
           />
+        )}
 
-          <div style={styles.passwordBox}>
-            <input
-              style={styles.passwordInput}
-              name="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              value={form.password}
-              onChange={handleChange}
-            />
+        <input
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+        />
 
-            <button
-              type="button"
-              style={styles.showButton}
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? "Hide" : "Show"}
-            </button>
-          </div>
+        <input
+          type={showPassword ? "text" : "password"}
+          name="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={handleChange}
+        />
 
-          {mode === "register" && (
-            <p style={styles.passwordHelp}>
-              Password forte: mínimo 8 caracteres, 1 maiúscula, 1 minúscula e 1 número.
-            </p>
-          )}
+        <button type="submit">
+          {mode === "login" ? "Entrar" : "Criar conta"}
+        </button>
+      </form>
 
-          {mode === "login" && (
-            <button
-              type="button"
-              onClick={handleForgotPassword}
-              style={styles.forgotButton}
-            >
-              Esqueceste a password?
-            </button>
-          )}
+      {mode === "login" && (
+        <button onClick={handleForgotPassword}>
+          Esqueci-me da password
+        </button>
+      )}
 
-          <button style={styles.mainButton}>
-            {mode === "login" ? "Entrar" : "Criar conta"}
-          </button>
-        </form>
-
-        <p style={styles.note}>
-          {mode === "login"
-            ? "Ainda não tens conta? Clica em Registar."
-            : "Já tens conta? Clica em Login."}
-        </p>
-      </div>
+      <button
+        onClick={() => setMode(mode === "login" ? "register" : "login")}
+      >
+        Trocar modo
+      </button>
     </div>
   );
 }
+
 
 const styles = {
   page: {

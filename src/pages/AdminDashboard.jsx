@@ -72,7 +72,14 @@ function AdminDashboard() {
     };
   }, [orders]);
 
-  if (!user) return <Navigate to="/login" />;
+  if (!user)
+  return (
+    <Navigate
+      to="/login"
+      state={{ from: { pathname: "/zaks-admin" } }}
+      replace
+    />
+  );
   if (user.email !== ADMIN_EMAIL) return <Navigate to="/" />;
 
   return (
