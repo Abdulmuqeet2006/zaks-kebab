@@ -30,15 +30,9 @@ function Navbar({ setCartOpen }) {
   const isAdmin = user?.email === ADMIN_EMAIL;
 
   function handleAdminAccess() {
-    const code = prompt("Insere o código de acesso:");
-
-    if (code === ADMIN_CODE) {
-      setMenuOpen(false);
-      navigate("/zaks-admin");
-    } else {
-      alert("Código errado.");
-    }
-  }
+  setMenuOpen(false);
+  navigate("/zaks-admin");
+}
 
   return (
     <>
