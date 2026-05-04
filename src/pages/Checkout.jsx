@@ -1,17 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  onSnapshot,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "../firebase";
 
 const WHATSAPP = "351967292950";
-
 const STORE_MAPS_LINK =
   "https://www.google.com/maps/search/?api=1&query=Zaks%20Kebab%20Alverca";
 
 function Checkout() {
   const { cart, removeFromCart, clearCart } = useCart();
   const { user } = useAuth();
+  const [deliveryEnabled, setDeliveryEnabled] = useState(true);
 
   const [form, setForm] = useState({
     name: user?.displayName || "",
@@ -22,6 +28,23 @@ function Checkout() {
     payment: "Dinheiro",
     notes: "",
   });
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "settings", "store"), (snap) => {
+      const enabled = snap.exists() ? snap.data().deliveryEnabled ?? true : true;
+      setDeliveryEnabled(enabled);
+
+      if (!enabled) {
+        setForm((prev) => ({
+          ...prev,
+          method: "Levantamento",
+          address: "",
+        }));
+      }
+    });
+
+    return () => unsub();
+  }, []);
 
   const subtotal = cart.reduce((sum, item) => sum + Number(item.price || 0), 0);
   const deliveryMinimum = 7;
@@ -39,6 +62,11 @@ function Checkout() {
 
     if (name === "method" && value === "Levantamento") {
       setForm({ ...form, method: value, address: "" });
+      return;
+    }
+
+    if (name === "method" && value === "Entrega" && !deliveryEnabled) {
+      setForm({ ...form, method: "Levantamento", address: "" });
       return;
     }
 
@@ -124,7 +152,7 @@ ${itemsText}
 ━━━━━━━━━━━━━━
 💰 RESUMO
 Total produtos: €${total.toFixed(2)}
-Taxa de entrega: A confirmar pela loja
+${form.method === "Entrega" ? "Taxa de entrega: A confirmar pela loja" : ""}
 
 ━━━━━━━━━━━━━━
 📝 NOTAS
@@ -166,32 +194,85 @@ ${form.notes || "Sem notas"}
           <section style={styles.card}>
             <h2 style={styles.cardTitle}>Dados do cliente</h2>
 
-            <input style={styles.input} name="name" placeholder="Nome" value={form.name} onChange={handleChange} />
-            <input style={styles.input} name="phone" placeholder="Telefone" value={form.phone} onChange={handleChange} />
-            <input style={styles.input} name="nif" placeholder="NIF opcional" value={form.nif} maxLength="9" onChange={handleChange} />
+            <input
+              style={styles.input}
+              name="name"
+              placeholder="Nome"
+              value={form.name}
+              onChange={handleChange}
+            />
 
-            <select style={styles.input} name="method" value={form.method} onChange={handleChange}>
-              <option value="Entrega">Entrega</option>
+            <input
+              style={styles.input}
+              name="phone"
+              placeholder="Telefone"
+              value={form.phone}
+              onChange={handleChange}
+            />
+
+            <input
+              style={styles.input}
+              name="nif"
+              placeholder="NIF opcional"
+              value={form.nif}
+              maxLength="9"
+              onChange={handleChange}
+            />
+
+            <select
+              style={styles.input}
+              name="method"
+              value={form.method}
+              onChange={handleChange}
+            >
+              {deliveryEnabled && <option value="Entrega">Entrega</option>}
               <option value="Levantamento">Levantamento na loja</option>
             </select>
 
-            {form.method === "Entrega" && (
-              <input style={styles.input} name="address" placeholder="Morada para entrega" value={form.address} onChange={handleChange} />
+            {!deliveryEnabled && (
+              <p style={styles.warning}>
+                ⚠️ Hoje estamos apenas com levantamento na loja. Entregas
+                indisponíveis temporariamente.
+              </p>
+            )}
+
+            {form.method === "Entrega" && deliveryEnabled && (
+              <input
+                style={styles.input}
+                name="address"
+                placeholder="Morada para entrega"
+                value={form.address}
+                onChange={handleChange}
+              />
             )}
 
             {form.method === "Levantamento" && (
               <div style={styles.pickupBox}>
                 <strong>🏬 Levantamento na loja</strong>
                 <p style={styles.boxText}>Pronto para levantar em 10–15 min.</p>
-                <a href={STORE_MAPS_LINK} target="_blank" rel="noreferrer" style={styles.mapButton}>
+                <a
+                  href={STORE_MAPS_LINK}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={styles.mapButton}
+                >
                   📍 Abrir loja no Google Maps
                 </a>
               </div>
             )}
 
-            <select style={styles.input} name="payment" value={form.payment} onChange={handleChange}>
-              <option value="Dinheiro">Dinheiro - pagar na entrega/levantamento</option>
-              <option value="MB Way">MB Way - pagar na entrega/levantamento</option>
+            <select
+              style={styles.input}
+              name="payment"
+              value={form.payment}
+              onChange={handleChange}
+            >
+              <option value="Dinheiro">
+                Dinheiro - pagar na entrega/levantamento
+              </option>
+              <option value="MB Way">
+                MB Way - pagar na entrega/levantamento
+              </option>
             </select>
 
             <textarea
@@ -203,7 +284,7 @@ ${form.notes || "Sem notas"}
             />
 
             <p style={styles.warning}>
-              ⚠️ A taxa de entrega será confirmada manualmente pela loja conforme a zona.
+              ⚠️ O pedido será confirmado manualmente pela loja.
             </p>
           </section>
 
@@ -217,23 +298,35 @@ ${form.notes || "Sem notas"}
                 <div>
                   <strong>{item.name}</strong>
 
-                  {item.drink && <p style={styles.small}>🥤 Bebida: {item.drink}</p>}
+                  {item.drink && (
+                    <p style={styles.small}>🥤 Bebida: {item.drink}</p>
+                  )}
 
                   {item.extras?.length > 0 && (
                     <p style={styles.small}>
                       Extras:{" "}
                       {item.extras
-                        .map((e) => `${e.name} (+€${Number(e.price || 0).toFixed(2)})`)
+                        .map(
+                          (e) =>
+                            `${e.name} (+€${Number(e.price || 0).toFixed(2)})`
+                        )
                         .join(", ")}
                     </p>
                   )}
 
-                  {item.notes && <p style={styles.small}>Notas: {item.notes}</p>}
+                  {item.notes && (
+                    <p style={styles.small}>Notas: {item.notes}</p>
+                  )}
                 </div>
 
-                <strong style={styles.itemPrice}>€{Number(item.price || 0).toFixed(2)}</strong>
+                <strong style={styles.itemPrice}>
+                  €{Number(item.price || 0).toFixed(2)}
+                </strong>
 
-                <button style={styles.remove} onClick={() => removeFromCart(i)}>
+                <button
+                  style={styles.remove}
+                  onClick={() => removeFromCart(i)}
+                >
                   ×
                 </button>
               </div>
@@ -244,18 +337,21 @@ ${form.notes || "Sem notas"}
               <strong>€{subtotal.toFixed(2)}</strong>
             </div>
 
-            {form.method === "Entrega" && (
+            {form.method === "Entrega" && deliveryEnabled && (
               <div style={styles.deliveryBox}>
                 <p>🟢 Zona 1 — Bom Sucesso / Alverca</p>
                 <p>🟡 Zona 2 — Arcena / Forte da Casa</p>
                 <p>🔴 Zona 3 — Sobralinho</p>
-                <p style={styles.deliveryImportant}>🚚 Taxa de entrega: a confirmar pela loja</p>
+                <p style={styles.deliveryImportant}>
+                  🚚 Taxa de entrega: a confirmar pela loja
+                </p>
               </div>
             )}
 
             {subtotal < deliveryMinimum && form.method === "Entrega" && (
               <p style={styles.error}>
-                Pedido mínimo para entrega: €7. Valor atual: €{subtotal.toFixed(2)}.
+                Pedido mínimo para entrega: €7. Valor atual: €
+                {subtotal.toFixed(2)}.
               </p>
             )}
 
@@ -359,7 +455,10 @@ const styles = {
     lineHeight: "1.5",
     fontWeight: "700",
   },
-  boxText: { margin: "6px 0", color: "#d7c2a8" },
+  boxText: {
+    margin: "6px 0",
+    color: "#d7c2a8",
+  },
   pickupSummary: {
     background: "rgba(255,183,3,.12)",
     border: "1px solid rgba(255,183,3,.25)",
@@ -396,7 +495,10 @@ const styles = {
     padding: "14px 0",
     borderBottom: "1px solid rgba(255,255,255,.12)",
   },
-  itemPrice: { fontSize: "17px", color: "#ffb703" },
+  itemPrice: {
+    fontSize: "17px",
+    color: "#ffb703",
+  },
   small: {
     margin: "5px 0 0",
     fontSize: "13px",

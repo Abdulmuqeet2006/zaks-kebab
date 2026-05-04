@@ -7,6 +7,8 @@ import {
   query,
   updateDoc,
   doc,
+  setDoc,
+  onSnapshot,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
@@ -17,6 +19,7 @@ function AdminDashboard() {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deliveryEnabled, setDeliveryEnabled] = useState(true);
 
   async function loadOrders() {
     const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
@@ -35,8 +38,24 @@ function AdminDashboard() {
   useEffect(() => {
     if (user?.email === ADMIN_EMAIL) {
       loadOrders();
+
+      const unsub = onSnapshot(doc(db, "settings", "store"), (snap) => {
+        if (snap.exists()) {
+          setDeliveryEnabled(snap.data().deliveryEnabled ?? true);
+        }
+      });
+
+      return () => unsub();
     }
   }, [user]);
+
+  async function toggleDelivery() {
+    await setDoc(
+      doc(db, "settings", "store"),
+      { deliveryEnabled: !deliveryEnabled },
+      { merge: true }
+    );
+  }
 
   async function updateStatus(orderId, status) {
     await updateDoc(doc(db, "orders", orderId), { status });
@@ -56,9 +75,7 @@ function AdminDashboard() {
         o.date.getFullYear() === now.getFullYear()
     );
 
-    const year = orders.filter(
-      (o) => o.date.getFullYear() === now.getFullYear()
-    );
+    const year = orders.filter((o) => o.date.getFullYear() === now.getFullYear());
 
     const sum = (arr) =>
       arr.reduce((total, order) => total + Number(order.total || 0), 0);
@@ -72,20 +89,39 @@ function AdminDashboard() {
     };
   }, [orders]);
 
-  if (!user)
-  return (
-    <Navigate
-      to="/login"
-      state={{ from: { pathname: "/zaks-admin" } }}
-      replace
-    />
-  );
+  if (!user) {
+    return (
+      <Navigate
+        to="/login"
+        state={{ from: { pathname: "/zaks-admin" } }}
+        replace
+      />
+    );
+  }
+
   if (user.email !== ADMIN_EMAIL) return <Navigate to="/" />;
 
   return (
     <div style={styles.page}>
       <main style={styles.container}>
         <h1 style={styles.title}>Dashboard Admin</h1>
+
+        <button
+          onClick={toggleDelivery}
+          style={{
+            ...styles.deliveryToggle,
+            background: deliveryEnabled ? "#ff3b3b" : "#25D366",
+          }}
+        >
+          {deliveryEnabled ? "Desligar entregas 🚫" : "Ligar entregas ✅"}
+        </button>
+
+        <p style={styles.deliveryStatus}>
+          Estado atual:{" "}
+          <strong style={{ color: deliveryEnabled ? "#25D366" : "#ff6b6b" }}>
+            {deliveryEnabled ? "Entregas ligadas" : "Só levantamento"}
+          </strong>
+        </p>
 
         <div style={styles.grid}>
           <Card title="Hoje" value={`€${stats.today.toFixed(2)}`} />
@@ -166,6 +202,21 @@ const styles = {
   title: {
     color: "#ffb703",
     fontSize: "42px",
+  },
+  deliveryToggle: {
+    padding: "14px 20px",
+    borderRadius: "14px",
+    border: "none",
+    fontWeight: "900",
+    color: "white",
+    marginBottom: "10px",
+    cursor: "pointer",
+  },
+  deliveryStatus: {
+    marginTop: 0,
+    marginBottom: "24px",
+    color: "#d7c2a8",
+    fontWeight: "800",
   },
   grid: {
     display: "grid",
