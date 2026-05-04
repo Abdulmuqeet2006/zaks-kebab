@@ -5,7 +5,6 @@ import { useAuth } from "../context/AuthContext";
 import { labels, getLang } from "../data/categories";
 
 const ADMIN_EMAIL = "alvercazakskebab@gmail.com";
-const ADMIN_CODE = "Aanm1234";
 
 function Navbar({ setCartOpen }) {
   const { cart } = useCart();
@@ -30,9 +29,9 @@ function Navbar({ setCartOpen }) {
   const isAdmin = user?.email === ADMIN_EMAIL;
 
   function handleAdminAccess() {
-  setMenuOpen(false);
-  navigate("/zaks-admin");
-}
+    setMenuOpen(false);
+    navigate("/zaks-admin");
+  }
 
   return (
     <>
@@ -49,12 +48,16 @@ function Navbar({ setCartOpen }) {
 
         <nav className="premium-links">
           {links.map(([label, path]) => (
-            <Link key={path} to={path}>{label}</Link>
+            <Link key={path} to={path}>
+              {label}
+            </Link>
           ))}
         </nav>
 
         <div className="premium-actions">
-          <button className="menu-button" onClick={() => setMenuOpen(true)}>☰</button>
+          <button className="menu-button" onClick={() => setMenuOpen(true)}>
+            ☰
+          </button>
 
           {isAdmin && (
             <button className="admin-button" onClick={handleAdminAccess}>
@@ -72,15 +75,21 @@ function Navbar({ setCartOpen }) {
               <button onClick={logout}>Sair</button>
             </div>
           ) : (
-            <Link to="/login" className="login-button">Login</Link>
+            <Link to="/login" className="login-button">
+              Login
+            </Link>
           )}
         </div>
       </header>
 
-      {menuOpen && <div className="menu-backdrop" onClick={() => setMenuOpen(false)} />}
+      {menuOpen && (
+        <div className="menu-backdrop" onClick={() => setMenuOpen(false)} />
+      )}
 
       <aside className={`mobile-drawer ${menuOpen ? "open" : ""}`}>
-        <button className="drawer-close" onClick={() => setMenuOpen(false)}>×</button>
+        <button className="drawer-close" onClick={() => setMenuOpen(false)}>
+          ×
+        </button>
 
         <div className="drawer-brand">
           <img src="/images/logo.png" alt="Zaks Kebab" />
@@ -109,7 +118,9 @@ function Navbar({ setCartOpen }) {
               <button onClick={logout}>Sair</button>
             </>
           ) : (
-            <Link to="/login" onClick={() => setMenuOpen(false)}>Login</Link>
+            <Link to="/login" onClick={() => setMenuOpen(false)}>
+              Login
+            </Link>
           )}
         </div>
       </aside>

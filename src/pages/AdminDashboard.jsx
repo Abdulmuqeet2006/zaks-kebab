@@ -21,19 +21,10 @@ function AdminDashboard() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deliveryEnabled, setDeliveryEnabled] = useState(true);
-  const [codeOk, setCodeOk] = useState(false);
-
-  useEffect(() => {
-    if (user?.email === ADMIN_EMAIL) {
-      const code = prompt("Insere o código de acesso:");
-
-      if (code === ADMIN_CODE) {
-        setCodeOk(true);
-      } else {
-        alert("Código errado.");
-      }
-    }
-  }, [user]);
+  const [codeInput, setCodeInput] = useState("");
+  const [codeOk, setCodeOk] = useState(
+    sessionStorage.getItem("zaksAdminCodeOk") === "true"
+  );
 
   async function loadOrders() {
     const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
@@ -63,6 +54,18 @@ function AdminDashboard() {
     }
   }, [user, codeOk]);
 
+  function submitCode(e) {
+    e.preventDefault();
+
+    if (codeInput === ADMIN_CODE) {
+      sessionStorage.setItem("zaksAdminCodeOk", "true");
+      setCodeOk(true);
+    } else {
+      alert("Código errado.");
+      setCodeInput("");
+    }
+  }
+
   async function toggleDelivery() {
     await setDoc(
       doc(db, "settings", "store"),
@@ -89,9 +92,7 @@ function AdminDashboard() {
         o.date.getFullYear() === now.getFullYear()
     );
 
-    const year = orders.filter(
-      (o) => o.date.getFullYear() === now.getFullYear()
-    );
+    const year = orders.filter((o) => o.date.getFullYear() === now.getFullYear());
 
     const sum = (arr) =>
       arr.reduce((total, order) => total + Number(order.total || 0), 0);
@@ -120,9 +121,24 @@ function AdminDashboard() {
   if (!codeOk) {
     return (
       <div style={styles.page}>
-        <main style={styles.container}>
-          <h1 style={styles.title}>Acesso restrito</h1>
-          <p>Código de acesso necessário.</p>
+        <main style={styles.accessBox}>
+          <h1 style={styles.accessTitle}>Acesso Admin 🔐</h1>
+          <p style={styles.accessText}>
+            Insere o código de acesso para abrir o painel.
+          </p>
+
+          <form onSubmit={submitCode}>
+            <input
+              style={styles.codeInput}
+              type="password"
+              placeholder="Código de acesso"
+              value={codeInput}
+              onChange={(e) => setCodeInput(e.target.value)}
+              autoFocus
+            />
+
+            <button style={styles.codeButton}>Entrar no Dashboard</button>
+          </form>
         </main>
       </div>
     );
@@ -232,6 +248,47 @@ const styles = {
     color: "#ffb703",
     fontSize: "42px",
   },
+  accessBox: {
+    maxWidth: "430px",
+    margin: "100px auto",
+    background: "linear-gradient(180deg, #24150e, #130d09)",
+    border: "1px solid rgba(255,183,3,.25)",
+    borderRadius: "24px",
+    padding: "28px",
+    boxShadow: "0 24px 60px rgba(0,0,0,.45)",
+    textAlign: "center",
+  },
+  accessTitle: {
+    color: "#ffb703",
+    margin: "0 0 10px",
+    fontSize: "32px",
+  },
+  accessText: {
+    color: "#d7c2a8",
+    fontWeight: "800",
+  },
+  codeInput: {
+    width: "100%",
+    padding: "15px",
+    borderRadius: "14px",
+    border: "1px solid rgba(255,183,3,.25)",
+    background: "#fff7e8",
+    color: "#160f0b",
+    fontSize: "16px",
+    boxSizing: "border-box",
+    marginTop: "12px",
+  },
+  codeButton: {
+    width: "100%",
+    padding: "15px",
+    marginTop: "12px",
+    borderRadius: "14px",
+    border: "none",
+    background: "linear-gradient(135deg, #ffb703, #fb8500)",
+    color: "#160f0b",
+    fontWeight: "1000",
+    cursor: "pointer",
+  },
   deliveryToggle: {
     padding: "14px 20px",
     borderRadius: "14px",
@@ -286,7 +343,7 @@ const styles = {
     marginTop: "10px",
     color: "#d7c2a8",
     fontSize: "14px",
-  },
+  },  
   select: {
     marginTop: "10px",
     padding: "10px",
