@@ -229,12 +229,11 @@ ${form.notes || "Sem notas"}
               <option value="Levantamento">Levantamento na loja</option>
             </select>
 
-            {!deliveryEnabled && (
-              <p style={styles.warning}>
-                ⚠️ Hoje estamos apenas com levantamento na loja. Entregas
-                indisponíveis temporariamente.
-              </p>
-            )}
+           {!deliveryEnabled && (
+  <p style={styles.warning}>
+    ⚠️ Hoje não temos motorista de entrega disponível. Estamos apenas com levantamento na loja. Obrigado pela compreensão.
+  </p>
+)}
 
             {form.method === "Entrega" && deliveryEnabled && (
               <input

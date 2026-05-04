@@ -14,12 +14,26 @@ import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 
 const ADMIN_EMAIL = "alvercazakskebab@gmail.com";
+const ADMIN_CODE = "Aanm1234";
 
 function AdminDashboard() {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deliveryEnabled, setDeliveryEnabled] = useState(true);
+  const [codeOk, setCodeOk] = useState(false);
+
+  useEffect(() => {
+    if (user?.email === ADMIN_EMAIL) {
+      const code = prompt("Insere o código de acesso:");
+
+      if (code === ADMIN_CODE) {
+        setCodeOk(true);
+      } else {
+        alert("Código errado.");
+      }
+    }
+  }, [user]);
 
   async function loadOrders() {
     const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
@@ -36,7 +50,7 @@ function AdminDashboard() {
   }
 
   useEffect(() => {
-    if (user?.email === ADMIN_EMAIL) {
+    if (user?.email === ADMIN_EMAIL && codeOk) {
       loadOrders();
 
       const unsub = onSnapshot(doc(db, "settings", "store"), (snap) => {
@@ -47,7 +61,7 @@ function AdminDashboard() {
 
       return () => unsub();
     }
-  }, [user]);
+  }, [user, codeOk]);
 
   async function toggleDelivery() {
     await setDoc(
@@ -75,7 +89,9 @@ function AdminDashboard() {
         o.date.getFullYear() === now.getFullYear()
     );
 
-    const year = orders.filter((o) => o.date.getFullYear() === now.getFullYear());
+    const year = orders.filter(
+      (o) => o.date.getFullYear() === now.getFullYear()
+    );
 
     const sum = (arr) =>
       arr.reduce((total, order) => total + Number(order.total || 0), 0);
@@ -101,6 +117,17 @@ function AdminDashboard() {
 
   if (user.email !== ADMIN_EMAIL) return <Navigate to="/" />;
 
+  if (!codeOk) {
+    return (
+      <div style={styles.page}>
+        <main style={styles.container}>
+          <h1 style={styles.title}>Acesso restrito</h1>
+          <p>Código de acesso necessário.</p>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div style={styles.page}>
       <main style={styles.container}>
@@ -119,7 +146,9 @@ function AdminDashboard() {
         <p style={styles.deliveryStatus}>
           Estado atual:{" "}
           <strong style={{ color: deliveryEnabled ? "#25D366" : "#ff6b6b" }}>
-            {deliveryEnabled ? "Entregas ligadas" : "Só levantamento"}
+            {deliveryEnabled
+              ? "Entregas ligadas"
+              : "Hoje não temos motorista de entrega"}
           </strong>
         </p>
 

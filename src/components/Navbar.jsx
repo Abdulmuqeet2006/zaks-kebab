@@ -1,13 +1,17 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { labels, getLang } from "../data/categories";
+
+const ADMIN_EMAIL = "alvercazakskebab@gmail.com";
+const ADMIN_CODE = "Aanm1234";
 
 function Navbar({ setCartOpen }) {
   const { cart } = useCart();
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const lang = getLang();
   const t = labels[lang];
@@ -23,6 +27,18 @@ function Navbar({ setCartOpen }) {
   ];
 
   const userName = user?.displayName || user?.email?.split("@")[0] || "Cliente";
+  const isAdmin = user?.email === ADMIN_EMAIL;
+
+  function handleAdminAccess() {
+    const code = prompt("Insere o código de acesso:");
+
+    if (code === ADMIN_CODE) {
+      setMenuOpen(false);
+      navigate("/zaks-admin");
+    } else {
+      alert("Código errado.");
+    }
+  }
 
   return (
     <>
@@ -45,6 +61,12 @@ function Navbar({ setCartOpen }) {
 
         <div className="premium-actions">
           <button className="menu-button" onClick={() => setMenuOpen(true)}>☰</button>
+
+          {isAdmin && (
+            <button className="admin-button" onClick={handleAdminAccess}>
+              Admin 🔐
+            </button>
+          )}
 
           <button className="cart-button" onClick={() => setCartOpen(true)}>
             🛒 {cart.length}
@@ -79,6 +101,12 @@ function Navbar({ setCartOpen }) {
             {label}
           </Link>
         ))}
+
+        {isAdmin && (
+          <button className="drawer-admin-button" onClick={handleAdminAccess}>
+            Admin 🔐
+          </button>
+        )}
 
         <div className="drawer-user">
           {user ? (
@@ -193,8 +221,10 @@ const css = `
 
 .cart-button,
 .login-button,
+.admin-button,
 .user-pill button,
-.drawer-user button {
+.drawer-user button,
+.drawer-admin-button {
   border: none;
   background: linear-gradient(135deg, #ffb703, #fb8500);
   color: #160f0b;
@@ -204,6 +234,11 @@ const css = `
   cursor: pointer;
   text-decoration: none;
   box-shadow: 0 12px 30px rgba(251,133,0,.35);
+}
+
+.admin-button {
+  background: linear-gradient(135deg, #25D366, #12a150);
+  color: white;
 }
 
 .user-pill {
@@ -288,6 +323,14 @@ const css = `
   text-decoration: none;
 }
 
+.drawer-admin-button {
+  width: 100%;
+  margin: 10px 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #25D366, #12a150);
+  color: white;
+}
+
 .drawer-user {
   margin-top: 24px;
   padding-top: 18px;
@@ -323,7 +366,8 @@ const css = `
   }
 
   .user-pill,
-  .login-button {
+  .login-button,
+  .admin-button {
     display: none;
   }
 
