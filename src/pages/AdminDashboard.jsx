@@ -147,17 +147,24 @@ function AdminDashboard() {
   return (
     <div style={styles.page}>
       <main style={styles.container}>
-        <h1 style={styles.title}>Dashboard Admin</h1>
+        <div style={styles.header}>
+          <div>
+            <p style={styles.kicker}>Zaks Kebab Alverca</p>
+            <h1 style={styles.title}>Dashboard Admin</h1>
+          </div>
 
-        <button
-          onClick={toggleDelivery}
-          style={{
-            ...styles.deliveryToggle,
-            background: deliveryEnabled ? "#ff3b3b" : "#25D366",
-          }}
-        >
-          {deliveryEnabled ? "Desligar entregas 🚫" : "Ligar entregas ✅"}
-        </button>
+          <button
+            onClick={toggleDelivery}
+            style={{
+              ...styles.deliveryToggle,
+              background: deliveryEnabled
+                ? "linear-gradient(135deg, #ff3b3b, #b00020)"
+                : "linear-gradient(135deg, #25D366, #12a150)",
+            }}
+          >
+            {deliveryEnabled ? "Desligar entregas 🚫" : "Ligar entregas ✅"}
+          </button>
+        </div>
 
         <p style={styles.deliveryStatus}>
           Estado atual:{" "}
@@ -177,20 +184,33 @@ function AdminDashboard() {
         </div>
 
         <section style={styles.card}>
-          <h2>Pedidos</h2>
+          <h2 style={styles.sectionTitle}>Pedidos</h2>
 
           {loading && <p>A carregar pedidos...</p>}
 
           {!loading && orders.length === 0 && <p>Ainda não existem pedidos.</p>}
 
           {orders.map((order) => (
-            <div key={order.id} style={styles.order}>
+            <div
+              key={order.id}
+              style={{
+                ...styles.order,
+                borderLeft:
+                  order.status === "new"
+                    ? "5px solid #25D366"
+                    : order.status === "preparing"
+                    ? "5px solid #ffb703"
+                    : order.status === "delivered"
+                    ? "5px solid #4CAF50"
+                    : "5px solid #ff3b3b",
+              }}
+            >
               <div>
-                <strong>{order.customerName}</strong>
-                <p>{order.date.toLocaleString("pt-PT")}</p>
-                <p>📞 {order.phone}</p>
-                <p>🚚 {order.method}</p>
-                {order.address && <p>📍 {order.address}</p>}
+                <strong style={styles.customerName}>{order.customerName}</strong>
+                <p style={styles.orderText}>{order.date.toLocaleString("pt-PT")}</p>
+                <p style={styles.orderText}>📞 {order.phone}</p>
+                <p style={styles.orderText}>🚚 {order.method}</p>
+                {order.address && <p style={styles.orderText}>📍 {order.address}</p>}
 
                 <div style={styles.items}>
                   {order.items?.map((item, i) => (
@@ -226,7 +246,7 @@ function AdminDashboard() {
 
 function Card({ title, value }) {
   return (
-    <div style={styles.card}>
+    <div style={styles.statCard}>
       <p style={styles.label}>{title}</p>
       <h2 style={styles.value}>{value}</h2>
     </div>
@@ -236,7 +256,8 @@ function Card({ title, value }) {
 const styles = {
   page: {
     minHeight: "100vh",
-    background: "#0f0b08",
+    background:
+      "radial-gradient(circle at top right, rgba(255,183,3,.14), transparent 38%), linear-gradient(180deg, #0f0b08, #1b120d)",
     color: "#fff7e8",
     padding: "30px 14px",
   },
@@ -244,28 +265,144 @@ const styles = {
     maxWidth: "1200px",
     margin: "0 auto",
   },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "16px",
+    flexWrap: "wrap",
+    marginBottom: "8px",
+  },
+  kicker: {
+    margin: 0,
+    color: "#d7c2a8",
+    fontWeight: "900",
+    letterSpacing: "2px",
+    textTransform: "uppercase",
+    fontSize: "12px",
+  },
   title: {
     color: "#ffb703",
-    fontSize: "42px",
+    fontSize: "clamp(36px, 5vw, 58px)",
+    fontWeight: "1000",
+    margin: "4px 0 0",
+  },
+  deliveryToggle: {
+    padding: "14px 22px",
+    borderRadius: "999px",
+    border: "none",
+    fontWeight: "1000",
+    color: "white",
+    cursor: "pointer",
+    boxShadow: "0 16px 38px rgba(0,0,0,.45)",
+  },
+  deliveryStatus: {
+    marginTop: 0,
+    marginBottom: "24px",
+    color: "#d7c2a8",
+    fontWeight: "900",
+    fontSize: "15px",
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+    gap: "18px",
+    marginBottom: "26px",
+  },
+  statCard: {
+    background:
+      "radial-gradient(circle at top right, rgba(255,183,3,.16), transparent 35%), linear-gradient(180deg, #24150e, #130d09)",
+    border: "1px solid rgba(255,183,3,.25)",
+    borderRadius: "24px",
+    padding: "20px",
+    boxShadow: "0 25px 60px rgba(0,0,0,.45)",
+  },
+  card: {
+    background:
+      "radial-gradient(circle at top right, rgba(255,183,3,.12), transparent 35%), linear-gradient(180deg, #24150e, #130d09)",
+    border: "1px solid rgba(255,183,3,.25)",
+    borderRadius: "26px",
+    padding: "22px",
+    boxShadow: "0 25px 60px rgba(0,0,0,.45)",
+  },
+  sectionTitle: {
+    marginTop: 0,
+    color: "#fff7e8",
+    fontSize: "26px",
+  },
+  label: {
+    color: "#cdb89d",
+    fontWeight: "900",
+    margin: 0,
+    fontSize: "13px",
+  },
+  value: {
+    color: "#ffb703",
+    fontSize: "34px",
+    fontWeight: "1000",
+    margin: "8px 0 0",
+  },
+  order: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "16px",
+    padding: "16px",
+    marginTop: "14px",
+    borderRadius: "18px",
+    background: "rgba(255,255,255,.04)",
+    border: "1px solid rgba(255,255,255,.09)",
+    boxShadow: "0 16px 40px rgba(0,0,0,.25)",
+  },
+  customerName: {
+    fontSize: "18px",
+    color: "#fff7e8",
+  },
+  orderText: {
+    margin: "6px 0",
+    color: "#d7c2a8",
+    fontWeight: "700",
+  },
+  price: {
+    color: "#ffb703",
+    fontSize: "22px",
+    fontWeight: "1000",
+    whiteSpace: "nowrap",
+  },
+  items: {
+    marginTop: "10px",
+    color: "#d7c2a8",
+    fontSize: "14px",
+    lineHeight: "1.5",
+  },
+  select: {
+    marginTop: "10px",
+    padding: "10px 12px",
+    borderRadius: "12px",
+    border: "none",
+    fontWeight: "900",
+    background: "#fff7e8",
+    color: "#160f0b",
   },
   accessBox: {
     maxWidth: "430px",
     margin: "100px auto",
-    background: "linear-gradient(180deg, #24150e, #130d09)",
+    background:
+      "radial-gradient(circle at top right, rgba(255,183,3,.14), transparent 35%), linear-gradient(180deg, #24150e, #130d09)",
     border: "1px solid rgba(255,183,3,.25)",
-    borderRadius: "24px",
-    padding: "28px",
-    boxShadow: "0 24px 60px rgba(0,0,0,.45)",
+    borderRadius: "26px",
+    padding: "30px",
+    boxShadow: "0 30px 70px rgba(0,0,0,.5)",
     textAlign: "center",
   },
   accessTitle: {
     color: "#ffb703",
-    margin: "0 0 10px",
-    fontSize: "32px",
+    fontSize: "34px",
+    marginBottom: "10px",
   },
   accessText: {
     color: "#d7c2a8",
     fontWeight: "800",
+    marginBottom: "12px",
   },
   codeInput: {
     width: "100%",
@@ -275,8 +412,8 @@ const styles = {
     background: "#fff7e8",
     color: "#160f0b",
     fontSize: "16px",
+    marginTop: "10px",
     boxSizing: "border-box",
-    marginTop: "12px",
   },
   codeButton: {
     width: "100%",
@@ -288,68 +425,7 @@ const styles = {
     color: "#160f0b",
     fontWeight: "1000",
     cursor: "pointer",
-  },
-  deliveryToggle: {
-    padding: "14px 20px",
-    borderRadius: "14px",
-    border: "none",
-    fontWeight: "900",
-    color: "white",
-    marginBottom: "10px",
-    cursor: "pointer",
-  },
-  deliveryStatus: {
-    marginTop: 0,
-    marginBottom: "24px",
-    color: "#d7c2a8",
-    fontWeight: "800",
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-    gap: "16px",
-    marginBottom: "24px",
-  },
-  card: {
-    background: "linear-gradient(180deg, #24150e, #130d09)",
-    border: "1px solid rgba(255,183,3,.25)",
-    borderRadius: "22px",
-    padding: "20px",
-    boxShadow: "0 18px 45px rgba(0,0,0,.35)",
-  },
-  label: {
-    color: "#cdb89d",
-    fontWeight: "900",
-    margin: 0,
-  },
-  value: {
-    color: "#ffb703",
-    fontSize: "32px",
-    margin: "8px 0 0",
-  },
-  order: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: "16px",
-    borderBottom: "1px solid rgba(255,255,255,.12)",
-    padding: "18px 0",
-  },
-  price: {
-    color: "#ffb703",
-    fontSize: "22px",
-    whiteSpace: "nowrap",
-  },
-  items: {
-    marginTop: "10px",
-    color: "#d7c2a8",
-    fontSize: "14px",
-  },  
-  select: {
-    marginTop: "10px",
-    padding: "10px",
-    borderRadius: "10px",
-    border: "none",
-    fontWeight: "900",
+    boxShadow: "0 12px 30px rgba(251,133,0,.35)",
   },
 };
 
