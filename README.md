@@ -1,27 +1,59 @@
-# Zaks Kebab Alverca
+# 🍽️ Zaks Kebab Alverca
 
-Restaurant website built with React and Vite for Zaks Kebab Alverca.
+A modern and responsive restaurant website developed for **Zaks Kebab Alverca** using **React** and **Vite**. The project was designed to provide customers with a clean, fast, and mobile-friendly experience while showcasing the restaurant's menu and services.
 
-## Live Demo
-https://zaks-kebab.vercel.app
+## 🌐 Live Demo
 
-## Features
-- Responsive restaurant website
-- Digital menu presentation
-- Clean modern design
-- Mobile-friendly layout
-- Deployed online with Vercel
+🔗 https://zaks-kebab.vercel.app
 
-## Technologies
+---
+
+## ✨ Features
+
+- 📱 Fully responsive design
+- 🍔 Digital menu presentation
+- ⚡ Fast loading with Vite
+- 🎨 Modern and user-friendly interface
+- 🌍 Optimized for desktop and mobile devices
+- 🚀 Deployed with Vercel
+
+---
+
+## 🛠️ Technologies Used
+
 - React
-- JavaScript
-- CSS
-- HTML
+- JavaScript (ES6+)
+- HTML5
+- CSS3
 - Vite
 - Vercel
 
-## Project Purpose
-This project was created to present a real restaurant online with a modern and simple user experience.
+---
 
-## Author
-Mohammed Abdul Muqeet
+## 🎯 Project Goal
+
+The objective of this project was to create a professional online presence for **Zaks Kebab Alverca**, allowing customers to easily explore the menu and restaurant information through a modern and responsive website.
+
+---
+
+## 🚀 Future Improvements
+
+- Online ordering system
+- Reservation functionality
+- Multi-language support
+- Admin dashboard
+- Customer reviews section
+
+---
+
+## 👨‍💻 Author
+
+**Mohammed Abdul Muqeet**
+
+📧 mohamedabdulmuqeet242@gmail.com
+
+💼 LinkedIn:
+https://www.linkedin.com/in/mohammed-abdul-muqeet-541363290
+
+🐙 GitHub:
+https://github.com/Abdulmuqeet2006
